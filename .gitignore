@@ -1,0 +1,34 @@
+# ------------------------------------------------------------------
+# NIET DELEN: klantdocumenten en data bevatten persoonsgegevens
+# (namen, adressen, telefoonnummers) en interne bedrijfsinformatie.
+# ------------------------------------------------------------------
+docs/
+data/
+exports/
+
+# Vangnet: documenten en data-exports nergens in de repo committen
+*.pdf
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.csv
+*.png
+*.jpg
+
+# Secrets (API-sleutels, Azure SQL-gegevens)
+.env
+.env.*
+!.env.example
+*.key
+secrets/
+
+# Tijdelijke Office-bestanden
+~$*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/

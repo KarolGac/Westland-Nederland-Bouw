@@ -5,6 +5,7 @@
 docs/
 data/
 exports/
+presentatie/
 
 # Vangnet: documenten en data-exports nergens in de repo committen
 *.pdf
@@ -12,7 +13,9 @@ exports/
 *.doc
 *.xlsx
 *.xls
+*.pptx
 *.csv
+*.sql
 *.png
 *.jpg
 

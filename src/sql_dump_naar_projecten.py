@@ -85,6 +85,9 @@ def offerte(rij, doelset):
                 "aantal": float(r["qln_amount"]),
                 "eenheid": r["qln_unit"],
                 "bedrag_excl": float(r["qln_total_excl"]),
+                # 0 bij regels die niet in het offertebedrag zitten: "Opname meerwerk" (verrekend)
+                # en "(al in keukenorder)". Die laatste zijn wel werk dat ingepland wordt.
+                "gefactureerd": r.get("qln_billable") == "1",
                 "sectie": (r.get("section") or "").strip(),
                 "verborgen": r.get("qln_hidden") == "1",
             }

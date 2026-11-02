@@ -1,4 +1,4 @@
-"""Test prompt v2 via de OpenAI API: elke klus een paar keer door het model en de tabel uitlezen.
+"""Test de prompt via de OpenAI API: elke klus een paar keer door het model en de tabel uitlezen.
 
 Gebruik:
     python src/test_openai.py --droog                 alles klaarzetten zonder API (geen key nodig)
@@ -8,10 +8,10 @@ Gebruik:
 
 De API-key staat in .env in de repo-root (OPENAI_API_KEY=...), nooit in git. Optioneel OPENAI_MODEL.
 
-Systeemprompt = prompts/v2/instructies.md + beslisregels.md + de kennisbestanden uit
-data/verwerkt/kennis (artikelcodes.md, voorbeeldklussen.md). In de eigen GPT staan die als losse
-kennisbestanden die ChatGPT doorzoekt; hier leest het model ze helemaal. Daarom achteraf een paar
-klussen met de hand in de echte GPT controleren.
+Systeemprompt = prompts/v3/instructies.md + beslisregels.md + de kennisbestanden uit
+data/verwerkt/kennis (artikelcodes.md, voorbeeldklussen.md). In de skill staan die als losse
+bestanden (references/) die ChatGPT zelf opent; hier leest het model ze helemaal. Daarom achteraf een
+paar klussen met de hand in ChatGPT met de skill controleren.
 
 De voorbeeldklussen (voorbeeldklussen.txt) tellen niet mee in de test. Uitvoer per run in
 data/resultaten/<datum>_<model>_<prompt-hash>/: het antwoord (.md), voorstellen.csv met alle
@@ -109,8 +109,9 @@ def main():
     ap.add_argument("--runs", type=int, default=3)
     ap.add_argument("--model")
     ap.add_argument("--projecten", nargs="*", default=[], help="alleen deze projectcodes (ook voorbeeldklussen)")
-    ap.add_argument("--prompts", default=ROOT / "prompts" / "v2", type=Path)
+    ap.add_argument("--prompts", default=ROOT / "prompts" / "v3", type=Path)
     ap.add_argument("--kennis", default=ROOT / "data" / "verwerkt" / "kennis", type=Path)
+    ap.add_argument("--invoer", type=Path, help="map met <projectcode>.txt in plaats van de tekst uit de export (zie offerte_pdf_naar_tekst.py)")
     ap.add_argument("--data", default=ROOT / "data" / "verwerkt" / "projecten", type=Path)
     ap.add_argument("--uit", default=ROOT / "data" / "resultaten", type=Path)
     args = ap.parse_args()
@@ -134,14 +135,21 @@ def main():
         sys.exit("Geen klussen gevonden.")
 
     prompt_hash = hashlib.sha256(instructies.encode()).hexdigest()[:8]
-    map_ = args.uit / f"{datetime.date.today()}_{'droog' if args.droog else model}_{prompt_hash}"
+    achtervoegsel = f"_{args.invoer.name}" if args.invoer else ""
+    map_ = args.uit / f"{datetime.date.today()}_{'droog' if args.droog else model}_{prompt_hash}{achtervoegsel}"
     map_.mkdir(parents=True, exist_ok=True)
+
+    def invoer_van(p):
+        if args.invoer:
+            return (args.invoer / f"{p['projectcode']}.txt").read_text(encoding="utf-8")
+        return project_als_invoer(p)
+
     (map_ / "systeemprompt.md").write_text(instructies, encoding="utf-8")
     print(f"Systeemprompt: {len(instructies)} tekens (± {len(instructies) // 4} tokens), {len(klussen)} klussen -> {map_}")
 
     if args.droog:
         for p in klussen:
-            invoer = project_als_invoer(p)
+            invoer = invoer_van(p)
             (map_ / f"{p['projectcode']}_invoer.txt").write_text(invoer, encoding="utf-8")
             print(f"  {p['projectcode']}: invoer {len(invoer)} tekens")
         return
@@ -157,7 +165,7 @@ def main():
             wv.writeheader()
             wr.writeheader()
         for p in klussen:
-            invoer = project_als_invoer(p)
+            invoer = invoer_van(p)
             for run in range(1, args.runs + 1):
                 bestand = map_ / f"{p['projectcode']}_run{run}.md"
                 if bestand.exists():

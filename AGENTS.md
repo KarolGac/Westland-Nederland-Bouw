@@ -1,8 +1,9 @@
 # Instructies voor agents in deze repo
 
 AI Werklab (De Haagse Hogeschool) voor West Nederland Bouw: een geaccepteerde offerte omzetten in een
-voorstel voor werkbonnen. Eindproduct is een eigen GPT in ChatGPT Business; we testen via de OpenAI API.
-Uitleg over prompt v2 en de vaste uitvoer: `prompts/v2/README.md`.
+voorstel voor werkbonnen. Eindproduct is een skill in ChatGPT Business (geen eigen GPT: OpenAI stopt
+daarmee in december 2026); we testen via de OpenAI API.
+Huidige prompt: `prompts/v3/README.md`. Vaste uitvoer: `prompts/v2/README.md`.
 
 ## Privacy en de openbare repo
 - De GitHub-repo is **openbaar**. Commit nooit klantdata: geen offertes, werkbonnen, namen, adressen,
@@ -17,10 +18,11 @@ Uitleg over prompt v2 en de vaste uitvoer: `prompts/v2/README.md`.
 | Plek | Inhoud |
 |---|---|
 | `src/` | Scripts (Python 3.11+, alleen standaardbibliotheek) |
-| `prompts/` | Prompts per versie; `v2/` is de huidige |
+| `prompts/` | Prompts per versie; `v3/` is de huidige |
 | `tests/` | Unittests met eigen kleine voorbeelden, geen klantdata |
 | `data/ruw/` | Leveringen van de klant (niet wijzigen) |
-| `data/verwerkt/` | Gemaakt door scripts: projecten, antwoordblad, kennisbestanden |
+| `data/verwerkt/` | Gemaakt door scripts: projecten, antwoordblad, kennisbestanden, tekst uit de offerte-PDF's |
+| `data/skill/` | De skill om te uploaden (bevat voorbeeldklussen, dus niet in git) |
 | `data/resultaten/` | Uitkomsten van API-runs |
 | `docs/` | Eigen documenten (privé) |
 
@@ -35,6 +37,9 @@ Uitleg over prompt v2 en de vaste uitvoer: `prompts/v2/README.md`.
 python src/sql_dump_naar_projecten.py data/ruw/<levering>/WNB_offertes_werkbonnen_taalmodel.sql data/verwerkt/projecten
 python src/maak_antwoordblad.py data/verwerkt/projecten data/verwerkt
 python src/maak_kennisbestanden.py data/verwerkt/projecten data/verwerkt/kennis <projectcodes voorbeeldklussen>
+python src/maak_skill.py prompts/v3 data/verwerkt/kennis data/skill
+python src/offerte_pdf_naar_tekst.py data/ruw/<levering>/WNB_offertes_werkbonnen_taalmodel.sql data/ruw/<datum>_offerte_pdfs data/verwerkt/pdf_tekst
 python src/test_openai.py --droog
+python src/evalueer.py data/resultaten/<run-map>
 python -m unittest discover -s tests
 ```

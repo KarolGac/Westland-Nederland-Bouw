@@ -124,6 +124,8 @@ def werkbon(rij):
         "uitvoering": j["TypeOfWork"] not in GEEN_UITVOERING,
         "datum": j["WorkDate"],
         "starttijd": j["WorkTime"],
+        "eindtijd": j.get("WorkEndTime"),
+        "aangemaakt": j.get("CreationDate"),
         "duur_minuten": int(j["WorkDuration"] or 0),
         "status": j["status"],
         "omschrijving": (j.get("WorkDescription") or "").replace("\r\n", "\n").strip(),

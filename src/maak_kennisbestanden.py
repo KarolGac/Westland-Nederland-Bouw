@@ -1,4 +1,4 @@
-"""Kennisbestanden voor de eigen GPT (en de systeemprompt van de API-test).
+"""Kennisbestanden voor de skill (en de systeemprompt van de API-test).
 
 Gebruik:
     python src/maak_kennisbestanden.py data/verwerkt/projecten data/verwerkt/kennis <projectcode> [<projectcode> ...]
@@ -34,7 +34,7 @@ VAKGEBIED = {
 }
 
 # Vanaf deze regels staat er informatie van de keukenleverancier in de werkbon (leverweek, showroom,
-# inmeetdatum). Die komt niet uit de offerte, dus de GPT kan het niet weten.
+# inmeetdatum). Die komt niet uit de offerte, dus het model kan het niet weten.
 KNIP = re.compile(r"^\s*(leverweek|showroom|inmeet|werkzaamheden( aangekocht)?\s*:)", re.I)
 TELEFOON = re.compile(r"(\+31|0031|\b0)[\s-]?[1-9](?:[\s-]?\d){8}\b")
 EMAIL = re.compile(r"\S+@\S+")

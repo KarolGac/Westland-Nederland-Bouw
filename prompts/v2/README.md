@@ -1,17 +1,20 @@
-# Prompt v2: eigen GPT in ChatGPT Business
+# Prompt v2: skill in ChatGPT Business
 
 Versie 2 (14-10-2026). Vervangt v1 (`../offerte_naar_werkbon_v1.md`). Verschil met v1: disciplines zijn
 de namen uit OutSmart, uren per persoon in plaats van alleen dagen, artikelcode-indeling, regels voor
 "(al in keukenorder)" en afmonteren, en de hele offerte mag erin (besluit 14-10).
 
+Eerst gemaakt voor een eigen GPT. Sinds 29-10 wordt het een skill, omdat OpenAI in december 2026 stopt
+met eigen GPT's. De tekst van de prompt is daarvoor niet veranderd.
+
 ## Bestanden
 
-| Bestand | Waar | Rol in de GPT |
+| Bestand | Waar | Rol in de skill |
 |---|---|---|
-| `instructies.md` | git | Instructies (± 4.400 tekens, limiet ± 8.000) |
-| `beslisregels.md` | git | Kennisbestand |
-| `artikelcodes.md` | lokaal, `data/verwerkt/kennis/` | Kennisbestand |
-| `voorbeeldklussen.md` | lokaal, `data/verwerkt/kennis/` | Kennisbestand (bevat echte offertes, niet in git) |
+| `instructies.md` | git | `SKILL.md`, met naam en beschrijving erboven |
+| `beslisregels.md` | git | `references/` |
+| `artikelcodes.md` | lokaal, `data/verwerkt/kennis/` | `references/` |
+| `voorbeeldklussen.md` | lokaal, `data/verwerkt/kennis/` | `references/` (bevat echte offertes, niet in git) |
 
 De twee lokale bestanden maak je met:
 
@@ -21,7 +24,7 @@ python src/maak_kennisbestanden.py data/verwerkt/projecten data/verwerkt/kennis 
 
 ## Vaste uitvoer
 
-De GPT geeft altijd drie onderdelen: één tabel, "Niet ingepland" en "Vragen voor de planner".
+Het model geeft altijd drie onderdelen: één tabel, "Niet ingepland" en "Vragen voor de planner".
 De tabel heeft precies deze kolommen:
 
 | Kolom | Inhoud |
@@ -41,16 +44,20 @@ Waarom uren per persoon in plaats van "dagen": in OutSmart heeft elke werkbon ee
 In de export is 480 minuten (hele dag) het vaakst, dan 240 (halve dag) en 120 (2 uur). Zo kan de planner
 de werkbon direct overnemen en kunnen we het voorstel één op één naast het antwoordblad leggen
 (`src/maak_antwoordblad.py`, zelfde vorm). `src/werkbonvoorstel.py` leest de tabel in (`lees_voorstel`),
-ook als die uit de echte GPT is gekopieerd.
+ook als die uit ChatGPT is gekopieerd.
 
-## Eigen GPT inrichten (zodra de licentie er is)
+## Skill in ChatGPT Business
 
-1. Instructies: de inhoud van `instructies.md` plakken.
-2. Kennis: `beslisregels.md`, `artikelcodes.md` en `voorbeeldklussen.md` uploaden.
-3. Model: GPT-6.1 Sol, als de bouwer dat laat kiezen.
-4. Functies: webzoeken en afbeeldingen uit; geen acties.
-5. Geheugen uit voor het account van de planner, zodat elke offerte los wordt beoordeeld.
-6. Delen: alleen binnen de werkruimte van West Nederland Bouw.
+1. Zip maken: `python src/maak_skill.py prompts/v2 data/verwerkt/kennis data/skill` geeft
+   `data/skill/werkbonvoorstel.zip`. In `SKILL.md` is het stuk "Kennisbestanden" vervangen door een
+   verwijzing naar `references/`, omdat een skill die bestanden pas opent als de instructies dat zeggen.
+   De rest is gelijk aan `instructies.md`.
+2. Uploaden: in ChatGPT bij Skills, Create, Upload from your computer, de zip kiezen.
+3. Model: GPT-6.1 Sol kiezen in de chat. Het model zit niet in de skill.
+4. Geheugen uit voor het account van de planner, zodat elke offerte los wordt beoordeeld.
+5. Delen: in de bibliotheek van de werkruimte van West Nederland Bouw, niet daarbuiten.
+
+ChatGPT gebruikt de skill als de vraag past bij de beschrijving bovenaan `SKILL.md`.
 
 ## Testen via de API
 
@@ -58,10 +65,21 @@ ook als die uit de echte GPT is gekopieerd.
 python src/test_openai.py --droog       # klaarzetten zonder key
 python src/test_openai.py --modellen    # juiste model-id controleren
 python src/test_openai.py               # 11 testklussen x 3 runs
+python src/evalueer.py data/resultaten/<run-map>
 ```
 
-De API-test geeft de kennisbestanden helemaal mee in de systeemprompt; de GPT doorzoekt ze. Daarom na
-de API-test 4 à 5 klussen met de hand in de echte GPT controleren.
+De API-test geeft de kennisbestanden helemaal mee in de systeemprompt; in ChatGPT opent het model ze via
+de skill. Daarom na de API-test 4 à 5 klussen met de hand in ChatGPT met de skill controleren: plak het
+antwoord in `<projectcode>_skill1.md` in een map en draai `evalueer.py` op die map.
+
+## Evaluatie
+
+`src/evalueer.py` vergelijkt per antwoord en per discipline de persoonuren met het antwoordblad en telt
+wat de planner zou moeten aanpassen: een vergeten discipline, een extra discipline of persoonuren buiten
+de marge (standaard 4 uur of 25%, in te stellen met `--marge-uren` en `--marge-procent`). De verdeling
+"precies goed / 1 à 2 aanpassingen / 3 of meer" sluit aan op de vraag uit de nulmeting wanneer een
+voorstel goed genoeg is. Hetzelfde staat er nog eens met voor en na stuken samengenomen, omdat dat
+onderscheid voor de planner een kleine correctie is.
 
 ## Beperking van de test
 
